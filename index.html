@@ -5,19 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CAAS — Cyclic Adaptive Aquaculture System</title>
 
-<!-- NEW FONTS: Syne (display) + Rajdhani (body) + Space Mono (code) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Rajdhani:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* ============================================
-   VARIABLES & RESET
-   ============================================ */
 :root {
   --sky:      #0ea5e9;
   --cyan:     #06b6d4;
@@ -31,8 +27,6 @@
   --text:     #ddf0fc;
   --muted:    #6da8c8;
   --pump-red: #ff4444;
-
-  /* Font stack */
   --font-display: 'Syne', sans-serif;
   --font-body:    'Rajdhani', sans-serif;
   --font-mono:    'Space Mono', monospace;
@@ -40,7 +34,6 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-
 body {
   font-family: var(--font-body);
   background: var(--deep);
@@ -51,9 +44,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* ============================================
-   LANDING PAGE
-   ============================================ */
+/* ============ LANDING ============ */
 #landing {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; flex-direction: column;
@@ -63,28 +54,19 @@ body {
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
 #landing.hidden { opacity: 0; pointer-events: none; transform: translateY(-40px); }
-
 #three-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-
 .light-rays {
   position: absolute; top: 0; left: 0; right: 0; height: 60%;
-  background: radial-gradient(ellipse at 50% -20%,
-    rgba(6,182,212,0.18) 0%, rgba(14,165,233,0.08) 40%, transparent 70%);
-  pointer-events: none;
-  animation: rayPulse 6s ease-in-out infinite;
+  background: radial-gradient(ellipse at 50% -20%, rgba(6,182,212,0.18) 0%, rgba(14,165,233,0.08) 40%, transparent 70%);
+  pointer-events: none; animation: rayPulse 6s ease-in-out infinite;
 }
-@keyframes rayPulse {
-  0%,100% { opacity: 0.7; } 50% { opacity: 1; }
-}
-
+@keyframes rayPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
 .water-surface {
   position: absolute; top: 0; left: 0; right: 0; height: 3px;
   background: linear-gradient(90deg, transparent, rgba(6,182,212,0.7), rgba(14,165,233,0.9), rgba(6,182,212,0.7), transparent);
-  animation: shimmer 4s linear infinite;
-  background-size: 200% 100%;
+  animation: shimmer 4s linear infinite; background-size: 200% 100%;
 }
 @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-
 .bubbles-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .bubble {
   position: absolute; bottom: -20px; border-radius: 50%;
@@ -93,55 +75,31 @@ body {
   animation: rise linear infinite;
 }
 @keyframes rise {
-  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
-  10%  { opacity: 0.7; }
-  90%  { opacity: 0.3; }
-  100% { transform: translateY(-110vh) translateX(var(--drift)) scale(0.5); opacity: 0; }
+  0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
+  10%{opacity:0.7} 90%{opacity:0.3}
+  100%{transform:translateY(-110vh) translateX(var(--drift)) scale(0.5);opacity:0}
 }
-
-/* Landing content */
 .landing-content { position: relative; z-index: 10; text-align: center; padding: 2rem; }
-
 .landing-badge {
-  display: inline-block;
-  font-family: var(--font-mono);
+  display: inline-block; font-family: var(--font-mono);
   font-size: 0.65rem; letter-spacing: 0.3em; color: var(--cyan);
   border: 1px solid rgba(6,182,212,0.35); padding: 0.35rem 1.1rem; border-radius: 100px;
-  margin-bottom: 1.5rem; background: rgba(6,182,212,0.07);
-  animation: fadeUp 1s 0.2s both;
+  margin-bottom: 1.5rem; background: rgba(6,182,212,0.07); animation: fadeUp 1s 0.2s both;
 }
-
 .landing-acronym {
-  font-family: var(--font-display);
-  font-size: clamp(3.5rem, 9vw, 8rem); font-weight: 800; letter-spacing: 0.12em;
+  font-family: var(--font-display); font-size: clamp(3.5rem,9vw,8rem); font-weight: 800; letter-spacing: 0.12em;
   background: linear-gradient(135deg, #fff 0%, #7dd3fc 40%, #06b6d4 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  animation: fadeUp 1s 0.3s both;
-  filter: drop-shadow(0 0 50px rgba(6,182,212,0.55));
+  animation: fadeUp 1s 0.3s both; filter: drop-shadow(0 0 50px rgba(6,182,212,0.55));
 }
-
 .landing-title {
-  font-family: var(--font-display);
-  font-size: clamp(1rem, 2.5vw, 1.8rem); font-weight: 600; letter-spacing: 0.06em;
+  font-family: var(--font-display); font-size: clamp(1rem,2.5vw,1.8rem); font-weight: 600; letter-spacing: 0.06em;
   background: linear-gradient(135deg, #7dd3fc 0%, #06b6d4 70%, #0284c7 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   animation: fadeUp 1s 0.4s both; margin-bottom: 0.5rem;
 }
-
-.landing-divider {
-  width: 80px; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  margin: 0 auto 1.5rem;
-  animation: fadeUp 1s 0.5s both;
-}
-
-.landing-subtitle {
-  font-family: var(--font-body);
-  font-size: clamp(0.9rem, 2vw, 1.15rem); font-weight: 400; letter-spacing: 0.08em;
-  color: var(--muted); margin: 0.5rem 0 2.5rem;
-  animation: fadeUp 1s 0.6s both;
-}
-
+.landing-divider { width:80px; height:2px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); margin:0 auto 1.5rem; animation:fadeUp 1s 0.5s both; }
+.landing-subtitle { font-family:var(--font-body); font-size:clamp(0.9rem,2vw,1.15rem); font-weight:400; letter-spacing:0.08em; color:var(--muted); margin:0.5rem 0 2.5rem; animation:fadeUp 1s 0.6s both; }
 .btn-start {
   display: inline-flex; align-items: center; gap: 0.75rem;
   font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.15em;
@@ -151,404 +109,234 @@ body {
   box-shadow: 0 0 40px rgba(6,182,212,0.5), 0 4px 20px rgba(0,0,0,0.4);
   transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
 }
-.btn-start::before {
-  content:''; position:absolute; inset:0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-  opacity:0; transition:opacity 0.2s;
-}
-.btn-start:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 0 60px rgba(6,182,212,0.7), 0 8px 30px rgba(0,0,0,0.4); }
-.btn-start:hover::before { opacity:1; }
-.btn-start svg { width:18px; height:18px; }
+.btn-start:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 0 60px rgba(6,182,212,0.7), 0 8px 30px rgba(0,0,0,0.4); }
+.landing-stats { display:flex; gap:3rem; justify-content:center; margin-top:3rem; animation:fadeUp 1s 1s both; }
+.stat-item { text-align:center; }
+.stat-num { font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--cyan); }
+.stat-label { font-family:var(--font-body); font-size:0.7rem; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
 
-.landing-stats {
-  display: flex; gap: 3rem; justify-content: center; margin-top: 3rem;
-  animation: fadeUp 1s 1s both;
-}
-.stat-item { text-align: center; }
-.stat-num { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--cyan); }
-.stat-label { font-family: var(--font-body); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
-
-@keyframes fadeUp {
-  from { opacity:0; transform: translateY(30px); }
-  to   { opacity:1; transform: translateY(0); }
-}
-
-/* ============================================
-   DASHBOARD
-   ============================================ */
+/* ============ DASHBOARD ============ */
 #dashboard { display:none; min-height:100vh;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(6,182,212,0.07) 0%, transparent 50%),
+  background: radial-gradient(ellipse at 20% 0%, rgba(6,182,212,0.07) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.05) 0%, transparent 50%),
     linear-gradient(180deg, #040f1c 0%, #060d1a 100%);
 }
 #dashboard.visible { display:block; }
 
-/* NAV */
 .topnav {
   display:flex; align-items:center; justify-content:space-between;
-  padding: 0.9rem 2rem;
-  background: rgba(4,12,24,0.92);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(24px);
-  position: sticky; top:0; z-index:100;
+  padding:0.9rem 2rem; background:rgba(4,12,24,0.92); border-bottom:1px solid var(--border);
+  backdrop-filter:blur(24px); position:sticky; top:0; z-index:100;
 }
 .nav-brand { display:flex; align-items:center; gap:0.75rem; }
-.brand-logo {
-  width:36px; height:36px;
-  background: linear-gradient(135deg, var(--sky), var(--cyan));
-  border-radius:8px; display:flex; align-items:center; justify-content:center;
-}
+.brand-logo { width:36px; height:36px; background:linear-gradient(135deg,var(--sky),var(--cyan)); border-radius:8px; display:flex; align-items:center; justify-content:center; }
 .brand-logo svg { width:20px; height:20px; fill:white; }
-.brand-name {
-  font-family: var(--font-display); font-size: 1rem; font-weight: 800;
-  letter-spacing: 0.12em; color: var(--text);
-}
-.brand-sub { font-family: var(--font-body); font-size:0.62rem; color:var(--muted); letter-spacing:0.15em; }
+.brand-name { font-family:var(--font-display); font-size:1rem; font-weight:800; letter-spacing:0.12em; color:var(--text); }
+.brand-sub { font-family:var(--font-body); font-size:0.62rem; color:var(--muted); letter-spacing:0.15em; }
+.nav-actions { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
 
-.nav-actions { display:flex; align-items:center; gap:1rem; }
+/* Supabase badge */
+.supa-badge {
+  display:flex; align-items:center; gap:0.5rem;
+  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.04em;
+  padding:0.35rem 0.8rem; border-radius:100px;
+  background:rgba(62,207,142,0.08); border:1px solid rgba(62,207,142,0.28); color:#6ee7b7;
+}
+.supa-dot { width:7px; height:7px; border-radius:50%; background:#3ecf8e; box-shadow:0 0 6px #3ecf8e; animation:connPulse 2s ease-in-out infinite; }
 
 .conn-status {
   display:flex; align-items:center; gap:0.5rem;
-  font-family: var(--font-mono); font-size:0.68rem; letter-spacing:0.04em;
+  font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.04em;
   padding:0.4rem 0.9rem; border-radius:100px;
   background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.32); color:#fca5a5;
   transition:all 0.4s ease;
 }
 .conn-status.connected { background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.32); color:#6ee7b7; }
 .conn-dot { width:8px; height:8px; border-radius:50%; background:var(--red); transition:background 0.4s; }
-.conn-status.connected .conn-dot {
-  background:var(--green); box-shadow:0 0 8px var(--green);
-  animation:connPulse 2s ease-in-out infinite;
-}
-@keyframes connPulse {
-  0%,100%{ box-shadow:0 0 4px var(--green); }
-  50%    { box-shadow:0 0 12px var(--green), 0 0 20px rgba(16,185,129,0.4); }
-}
+.conn-status.connected .conn-dot { background:var(--green); box-shadow:0 0 8px var(--green); animation:connPulse 2s ease-in-out infinite; }
+@keyframes connPulse { 0%,100%{box-shadow:0 0 4px var(--green)} 50%{box-shadow:0 0 12px var(--green),0 0 20px rgba(16,185,129,0.4)} }
 
-.btn-connect {
-  font-family: var(--font-display); font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
-  color:var(--cyan); background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.38);
-  padding:0.45rem 1.1rem; border-radius:8px; cursor:pointer; transition:all 0.2s;
-}
+.btn-connect { font-family:var(--font-display); font-size:0.72rem; font-weight:700; letter-spacing:0.1em; color:var(--cyan); background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.38); padding:0.45rem 1.1rem; border-radius:8px; cursor:pointer; transition:all 0.2s; }
 .btn-connect:hover { background:rgba(6,182,212,0.18); box-shadow:0 0 15px rgba(6,182,212,0.3); }
-.btn-disconnect {
-  font-family: var(--font-display); font-size:0.72rem; font-weight:700; letter-spacing:0.1em;
-  color:#fca5a5; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.32);
-  padding:0.45rem 1.1rem; border-radius:8px; cursor:pointer; transition:all 0.2s;
-}
-.btn-disconnect:hover { background:rgba(239,68,68,0.18); box-shadow:0 0 15px rgba(239,68,68,0.3); }
-
+.btn-disconnect { font-family:var(--font-display); font-size:0.72rem; font-weight:700; letter-spacing:0.1em; color:#fca5a5; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.32); padding:0.45rem 1.1rem; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+.btn-disconnect:hover { background:rgba(239,68,68,0.18); }
 .nav-time { font-family:var(--font-mono); font-size:0.7rem; color:var(--muted); }
 
-/* MAIN */
 .dash-main { padding:1.5rem 2rem 3rem; max-width:1600px; margin:0 auto; display:grid; gap:1.5rem; }
 
-.section-label {
-  font-family: var(--font-mono); font-size:0.62rem; letter-spacing:0.28em;
-  text-transform:uppercase; color:var(--cyan);
-  margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem;
-}
+.section-label { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--cyan); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem; }
 .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
-/* GLASS CARD */
-.glass-card {
-  background: var(--glass); border:1px solid var(--border); border-radius:16px;
-  backdrop-filter:blur(20px); padding:1.5rem; position:relative; overflow:hidden;
-  transition: box-shadow 0.3s, border-color 0.3s;
-}
-.glass-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, transparent, rgba(6,182,212,0.45), transparent);
-}
+.glass-card { background:var(--glass); border:1px solid var(--border); border-radius:16px; backdrop-filter:blur(20px); padding:1.5rem; position:relative; overflow:hidden; transition:box-shadow 0.3s, border-color 0.3s; }
+.glass-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(6,182,212,0.45),transparent); }
 .glass-card:hover { border-color:rgba(6,182,212,0.38); box-shadow:var(--glow); }
 
-/* SENSOR ROW — now 4 columns */
-.sensor-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.sensor-card { position:relative; overflow:hidden; }
-.sensor-card .card-icon {
-  width:40px; height:40px; border-radius:10px;
-  display:flex; align-items:center; justify-content:center; margin-bottom:1rem;
-}
-.sensor-card .card-label {
-  font-family: var(--font-mono); font-size:0.6rem; letter-spacing:0.22em;
-  text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;
-}
-.sensor-card .card-value {
-  font-family: var(--font-display); font-size:clamp(2rem,3.5vw,3.2rem);
-  font-weight:800; line-height:1; margin-bottom:0.25rem;
-}
+/* SENSOR ROW */
+.sensor-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:1.5rem; }
+.sensor-card .card-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.sensor-card .card-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; }
+.sensor-card .card-value { font-family:var(--font-display); font-size:clamp(2rem,3.5vw,3.2rem); font-weight:800; line-height:1; margin-bottom:0.25rem; }
 .sensor-card .card-unit { font-family:var(--font-body); font-size:0.82rem; color:var(--muted); font-weight:400; }
-.sensor-card .card-sub  { font-family:var(--font-body); font-size:0.78rem; color:var(--muted); margin-top:0.5rem; }
+.sensor-card .card-sub { font-family:var(--font-body); font-size:0.78rem; color:var(--muted); margin-top:0.5rem; }
+.turb-card .card-icon { background:rgba(6,182,212,0.12); } .turb-card .card-value { color:var(--cyan); }
+.temp-card .card-icon { background:rgba(14,165,233,0.12); } .temp-card .card-value { color:var(--sky); }
+.pump-card .card-icon { background:rgba(16,185,129,0.12); }
+.wlevel-card .card-icon { background:rgba(99,179,237,0.12); } .wlevel-card .card-value { color:#63b3ed; }
 
-/* Individual card colors */
-.turb-card .card-icon  { background:rgba(6,182,212,0.12); }
-.turb-card .card-value { color:var(--cyan); }
-.temp-card .card-icon  { background:rgba(14,165,233,0.12); }
-.temp-card .card-value { color:var(--sky); }
-.pump-card .card-icon  { background:rgba(16,185,129,0.12); }
+.wlevel-gauge-wrap { margin-top:0.75rem; display:flex; align-items:flex-end; gap:0.6rem; }
+.wlevel-bar-bg { width:14px; height:60px; background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.25); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; flex-shrink:0; }
+.wlevel-bar-fill { width:100%; height:50%; background:linear-gradient(0deg,#06b6d4,#7dd3fc); border-radius:6px; transition:height 0.8s ease, background 0.5s ease; }
+.wlevel-bar-fill.low  { background:linear-gradient(0deg,#ef4444,#fca5a5); }
+.wlevel-bar-fill.mid  { background:linear-gradient(0deg,#f59e0b,#fde68a); }
+.wlevel-bar-fill.high { background:linear-gradient(0deg,#10b981,#6ee7b7); }
+.wlevel-pct { font-family:var(--font-display); font-size:1rem; font-weight:700; color:#63b3ed; transition:color 0.5s; }
+.wlevel-pct.low{color:var(--red)} .wlevel-pct.mid{color:var(--yellow)} .wlevel-pct.high{color:var(--green)}
 
-/* WATER LEVEL CARD */
-.wlevel-card .card-icon  { background:rgba(99,179,237,0.12); }
-.wlevel-card .card-value { color:#63b3ed; }
-
-/* Water level gauge (vertical fill bar) */
-.wlevel-gauge-wrap {
-  margin-top: 0.75rem;
-  display: flex;
-  align-items: flex-end;
-  gap: 0.6rem;
-}
-.wlevel-bar-bg {
-  width: 14px;
-  height: 60px;
-  background: rgba(6,182,212,0.1);
-  border: 1px solid rgba(6,182,212,0.25);
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-.wlevel-bar-fill {
-  width: 100%;
-  height: 50%;
-  background: linear-gradient(0deg, #06b6d4, #7dd3fc);
-  border-radius: 6px;
-  transition: height 0.8s ease, background 0.5s ease;
-}
-.wlevel-bar-fill.low  { background: linear-gradient(0deg, #ef4444, #fca5a5); }
-.wlevel-bar-fill.mid  { background: linear-gradient(0deg, #f59e0b, #fde68a); }
-.wlevel-bar-fill.high { background: linear-gradient(0deg, #10b981, #6ee7b7); }
-
-.wlevel-pct {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  color: #63b3ed;
-  transition: color 0.5s;
-}
-.wlevel-pct.low  { color: var(--red); }
-.wlevel-pct.mid  { color: var(--yellow); }
-.wlevel-pct.high { color: var(--green); }
-
-/* PUMP indicator */
 .pump-indicator { display:flex; align-items:center; gap:0.6rem; margin-top:0.5rem; }
-.pump-dot {
-  width:12px; height:12px; border-radius:50%;
-  background:var(--green); box-shadow:0 0 8px var(--green);
-  transition:background 0.4s, box-shadow 0.4s;
-}
-.pump-dot.pump-on {
-  background:var(--pump-red);
-  box-shadow:0 0 12px var(--pump-red), 0 0 30px rgba(255,68,68,0.4);
-  animation:pumpPulse 1s ease-in-out infinite;
-}
-@keyframes pumpPulse {
-  0%,100%{ box-shadow:0 0 8px var(--pump-red); transform:scale(1); }
-  50%    { box-shadow:0 0 20px var(--pump-red), 0 0 40px rgba(255,68,68,0.5); transform:scale(1.2); }
-}
-.pump-label-text {
-  font-family: var(--font-display); font-size:1.1rem; font-weight:700;
-  color:var(--green); transition:color 0.4s;
-}
+.pump-dot { width:12px; height:12px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); transition:background 0.4s, box-shadow 0.4s; }
+.pump-dot.pump-on { background:var(--pump-red); box-shadow:0 0 12px var(--pump-red), 0 0 30px rgba(255,68,68,0.4); animation:pumpPulse 1s ease-in-out infinite; }
+@keyframes pumpPulse { 0%,100%{box-shadow:0 0 8px var(--pump-red);transform:scale(1)} 50%{box-shadow:0 0 20px var(--pump-red),0 0 40px rgba(255,68,68,0.5);transform:scale(1.2)} }
+.pump-label-text { font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--green); transition:color 0.4s; }
 .pump-label-text.pump-on { color:var(--pump-red); }
-.pump-card.pump-on-state {
-  border-color:rgba(255,68,68,0.38);
-  animation:pumpCardPulse 2s ease-in-out infinite;
-}
-@keyframes pumpCardPulse {
-  0%,100%{ box-shadow:0 0 20px rgba(255,68,68,0.18); }
-  50%    { box-shadow:0 0 40px rgba(255,68,68,0.38); }
-}
+.pump-card.pump-on-state { border-color:rgba(255,68,68,0.38); animation:pumpCardPulse 2s ease-in-out infinite; }
+@keyframes pumpCardPulse { 0%,100%{box-shadow:0 0 20px rgba(255,68,68,0.18)} 50%{box-shadow:0 0 40px rgba(255,68,68,0.38)} }
 
 /* WATER ANALYSIS */
 .water-analysis { display:grid; grid-template-columns:280px 1fr; gap:1.5rem; }
-.water-status-card {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; gap:1rem; min-height:180px;
-}
-.water-orb {
-  width:100px; height:100px; border-radius:50%;
-  background: radial-gradient(circle at 40% 40%, rgba(6,182,212,0.5), rgba(6,182,212,0.08));
-  border:2px solid rgba(6,182,212,0.45);
-  box-shadow:0 0 30px rgba(6,182,212,0.28), inset 0 0 20px rgba(6,182,212,0.1);
-  display:flex; align-items:center; justify-content:center;
-  transition:all 0.5s ease; animation:orbBreath 4s ease-in-out infinite;
-}
+.water-status-card { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:1rem; min-height:180px; }
+.water-orb { width:100px; height:100px; border-radius:50%; background:radial-gradient(circle at 40% 40%, rgba(6,182,212,0.5), rgba(6,182,212,0.08)); border:2px solid rgba(6,182,212,0.45); box-shadow:0 0 30px rgba(6,182,212,0.28), inset 0 0 20px rgba(6,182,212,0.1); display:flex; align-items:center; justify-content:center; transition:all 0.5s ease; animation:orbBreath 4s ease-in-out infinite; }
 @keyframes orbBreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-.water-orb.warning {
-  background:radial-gradient(circle at 40% 40%, rgba(245,158,11,0.5), rgba(245,158,11,0.08));
-  border-color:rgba(245,158,11,0.45);
-  box-shadow:0 0 30px rgba(245,158,11,0.28), inset 0 0 20px rgba(245,158,11,0.08);
-}
-.water-orb.danger {
-  background:radial-gradient(circle at 40% 40%, rgba(239,68,68,0.5), rgba(239,68,68,0.08));
-  border-color:rgba(239,68,68,0.45);
-  animation:orbBreath 1.5s ease-in-out infinite, dangerPulse 1s ease-in-out infinite;
-}
-@keyframes dangerPulse {
-  0%,100%{ box-shadow:0 0 20px rgba(239,68,68,0.28); }
-  50%    { box-shadow:0 0 50px rgba(239,68,68,0.6); }
-}
+.water-orb.warning { background:radial-gradient(circle at 40% 40%, rgba(245,158,11,0.5), rgba(245,158,11,0.08)); border-color:rgba(245,158,11,0.45); box-shadow:0 0 30px rgba(245,158,11,0.28), inset 0 0 20px rgba(245,158,11,0.08); }
+.water-orb.danger { background:radial-gradient(circle at 40% 40%, rgba(239,68,68,0.5), rgba(239,68,68,0.08)); border-color:rgba(239,68,68,0.45); animation:orbBreath 1.5s ease-in-out infinite, dangerPulse 1s ease-in-out infinite; }
+@keyframes dangerPulse { 0%,100%{box-shadow:0 0 20px rgba(239,68,68,0.28)} 50%{box-shadow:0 0 50px rgba(239,68,68,0.6)} }
 .orb-icon { font-size:2.5rem; }
-.water-status-label {
-  font-family: var(--font-display); font-size:1.2rem; font-weight:700; color:var(--cyan); transition:color 0.5s;
-}
-.water-status-label.warning { color:var(--yellow); }
-.water-status-label.danger  { color:var(--red); }
+.water-status-label { font-family:var(--font-display); font-size:1.2rem; font-weight:700; color:var(--cyan); transition:color 0.5s; }
+.water-status-label.warning{color:var(--yellow)} .water-status-label.danger{color:var(--red)}
 .water-status-msg { font-family:var(--font-body); font-size:0.82rem; color:var(--muted); max-width:200px; }
 
-/* TURBIDITY OVERLAY */
-.turbidity-overlay {
-  position:fixed; inset:0; pointer-events:none; z-index:50; opacity:0;
-  backdrop-filter:blur(0px); background:rgba(139,107,60,0);
-  transition:opacity 1s ease, backdrop-filter 1s ease, background 1s ease;
-}
+.turbidity-overlay { position:fixed; inset:0; pointer-events:none; z-index:50; opacity:0; backdrop-filter:blur(0px); background:rgba(139,107,60,0); transition:opacity 1s ease, backdrop-filter 1s ease, background 1s ease; }
 .turbidity-overlay.foggy { opacity:1; backdrop-filter:blur(4px); background:rgba(120,90,40,0.05); }
 
-/* CHART */
 .chart-container { position:relative; height:240px; }
 
 /* SYSTEM STATUS */
 .system-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
-.sys-item {
-  display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem;
-  background:rgba(6,182,212,0.04); border:1px solid rgba(6,182,212,0.1); border-radius:10px;
-}
-.sys-item-icon {
-  width:32px; height:32px; border-radius:8px;
-  background:rgba(6,182,212,0.1); display:flex; align-items:center; justify-content:center;
-  font-size:1rem; flex-shrink:0;
-}
+.sys-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; background:rgba(6,182,212,0.04); border:1px solid rgba(6,182,212,0.1); border-radius:10px; }
+.sys-item-icon { width:32px; height:32px; border-radius:8px; background:rgba(6,182,212,0.1); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
 .sys-item-info { flex:1; }
 .sys-item-label { font-family:var(--font-body); font-size:0.66rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.15rem; }
-.sys-item-value { font-family:var(--font-mono); font-size:0.75rem; color:var(--text); font-weight:400; }
+.sys-item-value { font-family:var(--font-mono); font-size:0.75rem; color:var(--text); }
 
 /* BOTTOM ROW */
 .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
 
 /* SERIAL CONSOLE */
-.serial-console {
-  background:#030a13; border:1px solid rgba(6,182,212,0.18); border-radius:12px;
-  padding:1rem; overflow-y:auto; max-height:220px;
-  font-family:var(--font-mono); font-size:0.68rem; scroll-behavior:smooth;
-}
-.console-header {
-  display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;
-  padding-bottom:0.5rem; border-bottom:1px solid rgba(6,182,212,0.12);
-}
+.serial-console { background:#030a13; border:1px solid rgba(6,182,212,0.18); border-radius:12px; padding:1rem; overflow-y:auto; max-height:220px; font-family:var(--font-mono); font-size:0.68rem; scroll-behavior:smooth; }
+.console-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(6,182,212,0.12); }
 .console-dot { width:8px; height:8px; border-radius:50%; }
-.console-dot.red    { background:#ef4444; }
-.console-dot.yellow { background:#f59e0b; }
-.console-dot.green  { background:#10b981; }
+.console-dot.red{background:#ef4444} .console-dot.yellow{background:#f59e0b} .console-dot.green{background:#10b981}
 .console-title { font-family:var(--font-mono); font-size:0.62rem; color:var(--muted); letter-spacing:0.08em; margin-left:0.25rem; }
 .console-lines { display:flex; flex-direction:column; gap:0.25rem; }
-.console-line {
-  color:#64d2ff; display:flex; gap:0.5rem;
-  animation:lineIn 0.2s ease;
-}
+.console-line { color:#64d2ff; display:flex; gap:0.5rem; animation:lineIn 0.2s ease; }
 @keyframes lineIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-.console-line .ts  { color:rgba(100,210,255,0.4); flex-shrink:0; }
+.console-line .ts { color:rgba(100,210,255,0.4); flex-shrink:0; }
 .console-line .msg { color:#a5f3fc; }
 .console-line .val { color:#34d399; font-weight:700; }
 .console-empty { color:rgba(100,210,255,0.28); font-style:italic; }
 
+/* ALERTS PANEL */
+.alerts-panel { background:#030a13; border:1px solid rgba(239,68,68,0.2); border-radius:12px; padding:1rem; overflow-y:auto; max-height:220px; }
+.alerts-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(239,68,68,0.12); }
+.alerts-title { font-family:var(--font-mono); font-size:0.68rem; color:#fca5a5; letter-spacing:0.1em; }
+.alerts-count { font-family:var(--font-mono); font-size:0.62rem; color:var(--muted); }
+.alert-item { display:flex; align-items:flex-start; gap:0.75rem; padding:0.6rem 0.75rem; margin-bottom:0.4rem; border-radius:8px; border:1px solid; animation:lineIn 0.3s ease; }
+.alert-item.warning { background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.22); }
+.alert-item.danger  { background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.22); }
+.alert-icon { font-size:1rem; flex-shrink:0; margin-top:0.1rem; }
+.alert-body { flex:1; }
+.alert-type { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.1em; margin-bottom:0.15rem; }
+.alert-item.warning .alert-type { color:var(--yellow); }
+.alert-item.danger  .alert-type { color:var(--red); }
+.alert-msg { font-family:var(--font-body); font-size:0.75rem; color:var(--text); }
+.alert-time { font-family:var(--font-mono); font-size:0.58rem; color:var(--muted); margin-top:0.2rem; }
+.no-alerts { font-family:var(--font-mono); font-size:0.68rem; color:rgba(100,210,255,0.28); font-style:italic; text-align:center; padding:1rem 0; }
+
+/* SUPABASE HISTORY TABLE */
+.history-table-wrap { overflow-x:auto; }
+.history-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:0.65rem; }
+.history-table th { color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; padding:0.5rem 0.75rem; border-bottom:1px solid var(--border); text-align:left; font-weight:400; }
+.history-table td { padding:0.45rem 0.75rem; border-bottom:1px solid rgba(6,182,212,0.06); color:var(--text); }
+.history-table tr:hover td { background:rgba(6,182,212,0.03); }
+.history-table .val-turb { color:var(--cyan); } .history-table .val-temp { color:var(--sky); }
+.history-table .val-level { color:#63b3ed; }
+.badge-on  { background:rgba(255,68,68,0.12); color:#f87171; border:1px solid rgba(255,68,68,0.28); padding:0.1rem 0.5rem; border-radius:100px; font-size:0.58rem; }
+.badge-off { background:rgba(16,185,129,0.1); color:#6ee7b7; border:1px solid rgba(16,185,129,0.22); padding:0.1rem 0.5rem; border-radius:100px; font-size:0.58rem; }
+.history-empty { text-align:center; color:rgba(100,210,255,0.28); font-style:italic; padding:1.5rem; }
+
 /* CODE EDITOR */
 .code-editor-wrapper { position:relative; }
-.editor-toolbar {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0.5rem 0.75rem; background:#050f1e;
-  border-bottom:1px solid rgba(6,182,212,0.12); border-radius:12px 12px 0 0;
-}
+.editor-toolbar { display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.75rem; background:#050f1e; border-bottom:1px solid rgba(6,182,212,0.12); border-radius:12px 12px 0 0; }
 .editor-lang { font-family:var(--font-mono); font-size:0.62rem; color:var(--cyan); letter-spacing:0.1em; }
-.btn-copy {
-  font-family:var(--font-mono); font-size:0.62rem; color:var(--muted);
-  background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.18);
-  padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; transition:all 0.2s;
-}
+.btn-copy { font-family:var(--font-mono); font-size:0.62rem; color:var(--muted); background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.18); padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; transition:all 0.2s; }
 .btn-copy:hover { color:var(--cyan); border-color:rgba(6,182,212,0.38); }
 .btn-copy.copied { color:var(--green); border-color:rgba(16,185,129,0.38); }
-
-#code-editor {
-  width:100%; min-height:200px; max-height:220px;
-  background:#030a13; border:1px solid rgba(6,182,212,0.18); border-top:none;
-  border-radius:0 0 12px 12px; color:#a5f3fc;
-  font-family:var(--font-mono); font-size:0.68rem; line-height:1.7;
-  padding:1rem; resize:vertical; outline:none;
-  overflow-y:auto; white-space:pre; overflow-x:auto; tab-size:2;
-}
+#code-editor { width:100%; min-height:200px; max-height:220px; background:#030a13; border:1px solid rgba(6,182,212,0.18); border-top:none; border-radius:0 0 12px 12px; color:#a5f3fc; font-family:var(--font-mono); font-size:0.68rem; line-height:1.7; padding:1rem; resize:vertical; outline:none; overflow-y:auto; white-space:pre; overflow-x:auto; tab-size:2; }
 #code-editor:focus { border-color:rgba(6,182,212,0.38); }
 
-/* SCROLLBAR */
-::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:rgba(6,182,212,0.28); border-radius:100px; }
-::-webkit-scrollbar-thumb:hover { background:rgba(6,182,212,0.48); }
+/* SUPABASE STATUS */
+.supa-status-row { display:flex; align-items:center; gap:1rem; padding:0.6rem 1rem; background:rgba(62,207,142,0.05); border:1px solid rgba(62,207,142,0.18); border-radius:10px; margin-bottom:0.75rem; }
+.supa-status-icon { font-size:1.1rem; }
+.supa-status-text { font-family:var(--font-mono); font-size:0.68rem; color:#6ee7b7; }
+.supa-status-count { font-family:var(--font-mono); font-size:0.62rem; color:var(--muted); margin-left:auto; }
 
-/* TOAST */
-.toast {
-  position:fixed; bottom:2rem; right:2rem;
-  background:rgba(16,185,129,0.14); border:1px solid rgba(16,185,129,0.38); color:#6ee7b7;
-  font-family:var(--font-mono); font-size:0.72rem;
-  padding:0.75rem 1.25rem; border-radius:10px; z-index:9999;
-  opacity:0; transform:translateY(10px); transition:all 0.3s ease; pointer-events:none;
-}
-.toast.show { opacity:1; transform:translateY(0); }
-.toast.error { background:rgba(239,68,68,0.14); border-color:rgba(239,68,68,0.38); color:#fca5a5; }
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(6,182,212,0.28);border-radius:100px}
+::-webkit-scrollbar-thumb:hover{background:rgba(6,182,212,0.48)}
 
-/* RESPONSIVE */
-@media(max-width:1200px){ .sensor-row { grid-template-columns:1fr 1fr; } }
-@media(max-width:1000px){ .water-analysis { grid-template-columns:1fr; } .bottom-row { grid-template-columns:1fr; } }
-@media(max-width:680px) { .sensor-row { grid-template-columns:1fr; } .system-grid { grid-template-columns:1fr; } .topnav{flex-wrap:wrap;gap:0.75rem;} .dash-main{padding:1rem;} }
+.toast { position:fixed; bottom:2rem; right:2rem; background:rgba(16,185,129,0.14); border:1px solid rgba(16,185,129,0.38); color:#6ee7b7; font-family:var(--font-mono); font-size:0.72rem; padding:0.75rem 1.25rem; border-radius:10px; z-index:9999; opacity:0; transform:translateY(10px); transition:all 0.3s ease; pointer-events:none; max-width:320px; }
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.38);color:#fca5a5}
+.toast.info{background:rgba(6,182,212,0.14);border-color:rgba(6,182,212,0.38);color:#7dd3fc}
+
+@media(max-width:1200px){.sensor-row{grid-template-columns:1fr 1fr}}
+@media(max-width:1000px){.water-analysis{grid-template-columns:1fr}.bottom-row{grid-template-columns:1fr}}
+@media(max-width:680px){.sensor-row{grid-template-columns:1fr}.system-grid{grid-template-columns:1fr}.topnav{flex-wrap:wrap;gap:0.75rem}.dash-main{padding:1rem}}
 </style>
 </head>
 <body>
 
-<!-- TURBIDITY OVERLAY -->
 <div class="turbidity-overlay" id="turbidity-overlay"></div>
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ================================================
-     LANDING PAGE
-     ================================================ -->
+<!-- ===== LANDING ===== -->
 <section id="landing">
   <canvas id="three-canvas"></canvas>
   <div class="light-rays"></div>
   <div class="water-surface"></div>
   <div class="bubbles-container" id="bubbles"></div>
-
   <div class="landing-content">
-    <div class="landing-badge">⬡ Smart IoT Platform · v3.0</div>
+    <div class="landing-badge">⬡ Smart IoT Platform · v3.1 + Supabase</div>
     <div class="landing-acronym">CAAS</div>
     <div class="landing-title">Cyclic Adaptive Aquaculture System</div>
     <div class="landing-divider"></div>
-    <div class="landing-subtitle">Smart IoT Water Monitoring and Adaptive Control Platform</div>
+    <div class="landing-subtitle">Smart IoT Water Monitoring · Cloud Storage · Real-time Alerts</div>
     <button class="btn-start" id="btn-enter">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
       ENTER DASHBOARD
     </button>
     <div class="landing-stats">
       <div class="stat-item"><div class="stat-num">2s</div><div class="stat-label">Update Rate</div></div>
       <div class="stat-item"><div class="stat-num">9600</div><div class="stat-label">Baud Rate</div></div>
       <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Sensors</div></div>
+      <div class="stat-item"><div class="stat-num">☁</div><div class="stat-label">Supabase</div></div>
     </div>
   </div>
 </section>
 
-<!-- ================================================
-     DASHBOARD
-     ================================================ -->
+<!-- ===== DASHBOARD ===== -->
 <div id="dashboard">
-
-  <!-- NAV -->
   <nav class="topnav">
     <div class="nav-brand">
       <div class="brand-logo">
@@ -560,6 +348,10 @@ body {
       </div>
     </div>
     <div class="nav-actions">
+      <div class="supa-badge">
+        <div class="supa-dot"></div>
+        <span>Supabase</span>
+      </div>
       <div class="conn-status" id="conn-status">
         <span class="conn-dot"></span>
         <span id="conn-label">DISCONNECTED</span>
@@ -570,60 +362,39 @@ body {
     </div>
   </nav>
 
-  <!-- MAIN -->
   <div class="dash-main">
 
-    <!-- SENSOR CARDS — 4 sensors now -->
+    <!-- SENSOR CARDS -->
     <div>
       <div class="section-label">Live Sensor Readings</div>
       <div class="sensor-row">
-
-        <!-- Turbidity -->
         <div class="glass-card sensor-card turb-card">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          </div>
+          <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
           <div class="card-label">Turbidity</div>
           <div class="card-value" id="turb-val">---</div>
           <div class="card-unit">NTU (Analog)</div>
           <div class="card-sub" id="turb-status-inline">Awaiting data...</div>
         </div>
-
-        <!-- Temperature -->
         <div class="glass-card sensor-card temp-card">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>
-          </div>
+          <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></div>
           <div class="card-label">Temperature</div>
           <div class="card-value" id="temp-val">--.-</div>
           <div class="card-unit">°C</div>
           <div class="card-sub" id="temp-status-inline">Awaiting data...</div>
         </div>
-
-        <!-- Water Level -->
         <div class="glass-card sensor-card wlevel-card">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2">
-              <path d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/>
-            </svg>
-          </div>
+          <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2"><path d="M12 2C6 8 4 12 4 15a8 8 0 0016 0c0-3-2-7-8-13z"/></svg></div>
           <div class="card-label">Water Level</div>
           <div class="card-value" id="wlevel-val">---</div>
           <div class="card-unit">Raw Analog</div>
           <div class="wlevel-gauge-wrap">
-            <div class="wlevel-bar-bg">
-              <div class="wlevel-bar-fill" id="wlevel-fill"></div>
-            </div>
+            <div class="wlevel-bar-bg"><div class="wlevel-bar-fill" id="wlevel-fill"></div></div>
             <div class="wlevel-pct" id="wlevel-pct">--%</div>
           </div>
           <div class="card-sub" id="wlevel-status-inline">Awaiting data...</div>
         </div>
-
-        <!-- Pump Status -->
         <div class="glass-card sensor-card pump-card" id="pump-card">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 8 16 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
-          </div>
+          <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 8 16 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg></div>
           <div class="card-label">Pump Status</div>
           <div class="pump-indicator">
             <div class="pump-dot" id="pump-dot"></div>
@@ -631,7 +402,6 @@ body {
           </div>
           <div class="card-sub" style="margin-top:0.75rem;" id="pump-sub">No data received</div>
         </div>
-
       </div>
     </div>
 
@@ -640,9 +410,7 @@ body {
       <div class="section-label">Water Quality Analysis</div>
       <div class="water-analysis">
         <div class="glass-card water-status-card">
-          <div class="water-orb" id="water-orb">
-            <span class="orb-icon" id="orb-icon">💧</span>
-          </div>
+          <div class="water-orb" id="water-orb"><span class="orb-icon" id="orb-icon">💧</span></div>
           <div class="water-status-label" id="water-status-label">STANDBY</div>
           <div class="water-status-msg" id="water-status-msg">Waiting for sensor data</div>
         </div>
@@ -651,8 +419,54 @@ body {
             <span style="font-family:var(--font-display);font-size:0.78rem;font-weight:700;color:var(--text);letter-spacing:0.06em;">Turbidity — Live Graph</span>
             <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);">Last 30 readings</span>
           </div>
-          <div class="chart-container">
-            <canvas id="turbChart"></canvas>
+          <div class="chart-container"><canvas id="turbChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTS + HISTORY -->
+    <div>
+      <div class="section-label">Alerts & Cloud History</div>
+      <div class="bottom-row">
+        <!-- Alerts -->
+        <div>
+          <div style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;color:var(--text);margin-bottom:0.5rem;">⚠ Active Alerts</div>
+          <div class="alerts-panel">
+            <div class="alerts-header">
+              <span class="alerts-title">CAAS Alert Stream</span>
+              <span class="alerts-count" id="alerts-count">0 alerts</span>
+            </div>
+            <div id="alerts-list"><div class="no-alerts">// No alerts — system nominal</div></div>
+          </div>
+        </div>
+        <!-- Supabase history -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+            <span style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;color:var(--text);">☁ Cloud History</span>
+            <button onclick="loadHistory()" style="font-family:var(--font-mono);font-size:0.6rem;color:var(--cyan);background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.28);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;">↻ Refresh</button>
+          </div>
+          <div class="glass-card" style="padding:1rem;">
+            <div class="supa-status-row">
+              <span class="supa-status-icon">🟢</span>
+              <span class="supa-status-text">Connected to Supabase</span>
+              <span class="supa-status-count" id="total-records">Loading...</span>
+            </div>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Turbidity</th>
+                    <th>Temp °C</th>
+                    <th>Level</th>
+                    <th>Pump</th>
+                  </tr>
+                </thead>
+                <tbody id="history-tbody">
+                  <tr><td colspan="5" class="history-empty">Loading from Supabase...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -665,62 +479,41 @@ body {
         <div class="system-grid">
           <div class="sys-item">
             <div class="sys-item-icon">🔌</div>
-            <div class="sys-item-info">
-              <div class="sys-item-label">Arduino Connection</div>
-              <div class="sys-item-value" id="sys-conn">Disconnected</div>
-            </div>
+            <div class="sys-item-info"><div class="sys-item-label">Arduino Connection</div><div class="sys-item-value" id="sys-conn">Disconnected</div></div>
           </div>
           <div class="sys-item">
             <div class="sys-item-icon">⚡</div>
-            <div class="sys-item-info">
-              <div class="sys-item-label">Pump State</div>
-              <div class="sys-item-value" id="sys-pump">Unknown</div>
-            </div>
+            <div class="sys-item-info"><div class="sys-item-label">Pump State</div><div class="sys-item-value" id="sys-pump">Unknown</div></div>
           </div>
           <div class="sys-item">
             <div class="sys-item-icon">🌊</div>
-            <div class="sys-item-info">
-              <div class="sys-item-label">Water Level</div>
-              <div class="sys-item-value" id="sys-wlevel">Unknown</div>
-            </div>
+            <div class="sys-item-info"><div class="sys-item-label">Water Level</div><div class="sys-item-value" id="sys-wlevel">Unknown</div></div>
           </div>
           <div class="sys-item">
             <div class="sys-item-icon">🕐</div>
-            <div class="sys-item-info">
-              <div class="sys-item-label">Last Update</div>
-              <div class="sys-item-value" id="sys-lastupdate">Never</div>
-            </div>
+            <div class="sys-item-info"><div class="sys-item-label">Last Update</div><div class="sys-item-value" id="sys-lastupdate">Never</div></div>
           </div>
           <div class="sys-item">
             <div class="sys-item-icon">📦</div>
-            <div class="sys-item-info">
-              <div class="sys-item-label">Packets Received</div>
-              <div class="sys-item-value" id="sys-packets">0</div>
-            </div>
+            <div class="sys-item-info"><div class="sys-item-label">Packets Received</div><div class="sys-item-value" id="sys-packets">0</div></div>
           </div>
           <div class="sys-item">
-            <div class="sys-item-icon">🌡</div>
-            <div class="sys-item-info">
-              <div class="sys-item-label">Temp Range</div>
-              <div class="sys-item-value">20°C — 30°C</div>
-            </div>
+            <div class="sys-item-icon">☁</div>
+            <div class="sys-item-info"><div class="sys-item-label">Saved to Cloud</div><div class="sys-item-value" id="sys-saved">0 records</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SERIAL CONSOLE + CODE EDITOR -->
+    <!-- SERIAL + CODE -->
     <div>
       <div class="section-label">Terminal & Code Editor</div>
       <div class="bottom-row">
-        <!-- Serial monitor -->
         <div>
           <div style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;color:var(--text);margin-bottom:0.5rem;">Serial Monitor</div>
           <div class="serial-console" id="serial-console">
             <div class="console-header">
-              <div class="console-dot red"></div>
-              <div class="console-dot yellow"></div>
-              <div class="console-dot green"></div>
+              <div class="console-dot red"></div><div class="console-dot yellow"></div><div class="console-dot green"></div>
               <div class="console-title">CAAS Serial Stream — 9600 baud</div>
             </div>
             <div class="console-lines" id="console-lines">
@@ -728,7 +521,6 @@ body {
             </div>
           </div>
         </div>
-        <!-- Code editor -->
         <div>
           <div style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;color:var(--text);margin-bottom:0.5rem;">Arduino Code Editor</div>
           <div class="code-editor-wrapper">
@@ -742,22 +534,206 @@ body {
       </div>
     </div>
 
-  </div><!-- /dash-main -->
-</div><!-- /dashboard -->
+  </div>
+</div>
 
-<!-- ================================================
-     SCRIPTS
-     ================================================ -->
+<!-- ===== SCRIPTS ===== -->
 <script>
 
-/* ===================================================
-   ARDUINO CODE — now includes Water Level sensor on A2
-   Serial format:
-   Turbidity: 350 | Temp: 26.50 | Level: 780 Pump ON
-   =================================================== */
+/* =============================================
+   SUPABASE CONFIG
+   ============================================= */
+const SUPABASE_URL = 'https://kamntzqizqfdjitqnsor.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthbW50enFpenFmZGppdHFuc29yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODY4NjAsImV4cCI6MjA5MzE2Mjg2MH0.SXcKBHpktb0vc0H2f8AwwJkgyMpNz9rQSzHL4C7vk88';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let savedCount = 0;
+let alertCount = 0;
+
+/* =============================================
+   SAVE READING TO SUPABASE
+   ============================================= */
+async function saveReading(turbidity, temperature, water_level, pump_status) {
+  try {
+    const { error } = await db.from('sensor_readings').insert([{
+      turbidity,
+      temperature,
+      water_level,
+      pump_status
+    }]);
+    if (error) throw error;
+    savedCount++;
+    document.getElementById('sys-saved').textContent = savedCount + ' records';
+  } catch (err) {
+    console.error('Supabase insert error:', err.message);
+  }
+}
+
+/* =============================================
+   SAVE ALERT TO SUPABASE
+   ============================================= */
+async function saveAlert(alert_type, severity, message, value) {
+  try {
+    const { error } = await db.from('alerts').insert([{
+      alert_type, severity, message, value, resolved: false
+    }]);
+    if (error) throw error;
+  } catch (err) {
+    console.error('Supabase alert error:', err.message);
+  }
+}
+
+/* =============================================
+   LOAD HISTORY FROM SUPABASE
+   ============================================= */
+async function loadHistory() {
+  try {
+    const { data, error, count } = await db
+      .from('sensor_readings')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(15);
+
+    if (error) throw error;
+
+    document.getElementById('total-records').textContent =
+      (count || (data && data.length) || 0) + ' total records';
+
+    const tbody = document.getElementById('history-tbody');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="history-empty">No records yet — connect Arduino to start logging</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(r => {
+      const t = new Date(r.created_at).toLocaleTimeString('en-GB');
+      const pump = r.pump_status
+        ? '<span class="badge-on">ON</span>'
+        : '<span class="badge-off">OFF</span>';
+      return `<tr>
+        <td>${t}</td>
+        <td class="val-turb">${r.turbidity}</td>
+        <td class="val-temp">${parseFloat(r.temperature).toFixed(1)}</td>
+        <td class="val-level">${r.water_level}</td>
+        <td>${pump}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    document.getElementById('history-tbody').innerHTML =
+      `<tr><td colspan="5" class="history-empty">Error: ${err.message}</td></tr>`;
+  }
+}
+
+/* =============================================
+   REALTIME SUBSCRIPTION — new readings
+   ============================================= */
+function subscribeRealtime() {
+  db.channel('sensor-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sensor_readings' },
+      payload => {
+        loadHistory();
+        showToast('☁ New reading saved to cloud', false, 'info');
+      })
+    .subscribe();
+
+  db.channel('alerts-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alerts' },
+      payload => {
+        const a = payload.new;
+        addAlertToPanel(a.alert_type, a.severity, a.message, a.value, new Date(a.created_at));
+      })
+    .subscribe();
+}
+
+/* =============================================
+   ALERTS PANEL UI
+   ============================================= */
+function addAlertToPanel(type, severity, message, value, time) {
+  const list = document.getElementById('alerts-list');
+  const empty = list.querySelector('.no-alerts');
+  if (empty) empty.remove();
+
+  alertCount++;
+  document.getElementById('alerts-count').textContent = alertCount + ' alert' + (alertCount > 1 ? 's' : '');
+
+  const div = document.createElement('div');
+  div.className = 'alert-item ' + severity.toLowerCase();
+  const icon = severity === 'DANGER' ? '🚨' : '⚠️';
+  const ts = (time || new Date()).toLocaleTimeString('en-GB');
+
+  div.innerHTML = `
+    <div class="alert-icon">${icon}</div>
+    <div class="alert-body">
+      <div class="alert-type">${type} · ${severity} · Value: ${value}</div>
+      <div class="alert-msg">${message}</div>
+      <div class="alert-time">${ts}</div>
+    </div>`;
+
+  list.insertBefore(div, list.firstChild);
+
+  // Keep max 20 alerts in panel
+  const items = list.querySelectorAll('.alert-item');
+  if (items.length > 20) items[items.length - 1].remove();
+}
+
+/* =============================================
+   ALERT LOGIC — check thresholds & fire alerts
+   ============================================= */
+let lastAlertTime = {}; // debounce per type
+
+async function checkAndFireAlerts(turbidity, tempC, level) {
+  const now = Date.now();
+  const DEBOUNCE = 30000; // 30s between same alert type
+
+  if (turbidity > 300) {
+    const severity = turbidity > 500 ? 'DANGER' : 'WARNING';
+    const msg = turbidity > 500
+      ? `Critical turbidity (${turbidity}) — immediate action required!`
+      : `High turbidity (${turbidity}) — water becoming unclear`;
+    if (!lastAlertTime['TURBIDITY'] || now - lastAlertTime['TURBIDITY'] > DEBOUNCE) {
+      lastAlertTime['TURBIDITY'] = now;
+      addAlertToPanel('TURBIDITY', severity, msg, turbidity);
+      await saveAlert('TURBIDITY', severity, msg, turbidity);
+      showToast('🚨 Alert: ' + msg, severity === 'DANGER', severity === 'DANGER' ? '' : 'info');
+    }
+  }
+
+  if (tempC < 20 || tempC > 30) {
+    const severity = (tempC < 15 || tempC > 35) ? 'DANGER' : 'WARNING';
+    const msg = tempC < 20
+      ? `Low temperature (${tempC.toFixed(1)}°C) — below optimal range`
+      : `High temperature (${tempC.toFixed(1)}°C) — above optimal range`;
+    if (!lastAlertTime['TEMPERATURE'] || now - lastAlertTime['TEMPERATURE'] > DEBOUNCE) {
+      lastAlertTime['TEMPERATURE'] = now;
+      addAlertToPanel('TEMPERATURE', severity, msg, tempC);
+      await saveAlert('TEMPERATURE', severity, msg, tempC);
+      showToast('⚠ Alert: ' + msg, severity === 'DANGER', 'info');
+    }
+  }
+
+  if (level < 300) {
+    const severity = level < 150 ? 'DANGER' : 'WARNING';
+    const msg = level < 150
+      ? `Critical water level (${level}) — pump protection active!`
+      : `Low water level (${level}) — refill tank soon`;
+    if (!lastAlertTime['WATER_LEVEL'] || now - lastAlertTime['WATER_LEVEL'] > DEBOUNCE) {
+      lastAlertTime['WATER_LEVEL'] = now;
+      addAlertToPanel('WATER_LEVEL', severity, msg, level);
+      await saveAlert('WATER_LEVEL', severity, msg, level);
+      showToast('💧 Alert: ' + msg, severity === 'DANGER', 'info');
+    }
+  }
+}
+
+/* =============================================
+   ARDUINO CODE
+   ============================================= */
 const DEFAULT_ARDUINO_CODE = `// =====================================================
-// CYCLIC ADAPTIVE AQUACULTURE SYSTEM (CAAS) v3.0
+// CYCLIC ADAPTIVE AQUACULTURE SYSTEM (CAAS) v3.1
 // Arduino Uno — 4-Sensor Water Monitor & Pump Control
+// Cloud: Supabase | Dashboard: CAAS v3.1
 // =====================================================
 
 // ---- Pin Definitions ----
@@ -767,12 +743,11 @@ const int WLEVEL_PIN     = A2;  // Water level sensor
 const int RELAY_PIN      = 7;   // Relay — active HIGH
 
 // ---- Thresholds ----
-const int   TURB_THRESHOLD   = 300;   // Turbidity danger limit
-const float TEMP_MIN         = 20.0;  // Min safe temp
-const float TEMP_MAX         = 30.0;  // Max safe temp
-const int   LEVEL_LOW_THRESH = 300;   // Low water level → pump OFF (protect pump)
+const int   TURB_THRESHOLD   = 300;
+const float TEMP_MIN         = 20.0;
+const float TEMP_MAX         = 30.0;
+const int   LEVEL_LOW_THRESH = 300;
 
-// ---- Timing ----
 const unsigned long INTERVAL = 2000;
 unsigned long lastTime = 0;
 
@@ -781,7 +756,7 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
   delay(500);
-  Serial.println("CAAS v3.0 Ready");
+  Serial.println("CAAS v3.1 Ready");
 }
 
 void loop() {
@@ -789,21 +764,12 @@ void loop() {
   if (now - lastTime >= INTERVAL) {
     lastTime = now;
 
-    // --- Turbidity ---
-    int turbRaw = analogRead(TURBIDITY_PIN);
-
-    // --- Temperature (LM35) ---
-    int   tempRaw = analogRead(TEMP_PIN);
+    int turbRaw   = analogRead(TURBIDITY_PIN);
+    int tempRaw   = analogRead(TEMP_PIN);
     float voltage = tempRaw * (5.0 / 1023.0);
-    float tempC   = voltage * 100.0; // LM35: 10mV/°C
+    float tempC   = voltage * 100.0;
+    int levelRaw  = analogRead(WLEVEL_PIN);
 
-    // --- Water Level ---
-    int levelRaw = analogRead(WLEVEL_PIN);
-    // levelRaw: 0 = empty/dry, ~1023 = submerged/high level
-
-    // --- Pump Logic ---
-    // Pump ON if: turbidity high OR temp out of range
-    // Pump OFF if: water level too low (protect pump from running dry)
     bool levelOk = (levelRaw > LEVEL_LOW_THRESH);
     bool pumpOn  = levelOk &&
                    ((turbRaw > TURB_THRESHOLD) ||
@@ -812,8 +778,6 @@ void loop() {
 
     digitalWrite(RELAY_PIN, pumpOn ? HIGH : LOW);
 
-    // --- Serial Output ---
-    // FORMAT: Turbidity: XXX | Temp: XX.XX | Level: XXX Pump ON/OFF
     Serial.print("Turbidity: ");
     Serial.print(turbRaw);
     Serial.print(" | Temp: ");
@@ -827,117 +791,66 @@ void loop() {
 
 document.getElementById('code-editor').value = DEFAULT_ARDUINO_CODE;
 
-/* ===================================================
-   THREE.JS — FISH SCENE
-   =================================================== */
+/* =============================================
+   THREE.JS FISH SCENE
+   ============================================= */
 (function initThree(){
   const canvas = document.getElementById('three-canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-  camera.position.set(0, 0, 15);
-
-  scene.add(new THREE.AmbientLight(0x0a3060, 2));
-  const sun = new THREE.DirectionalLight(0x3ab5e0, 3);
-  sun.position.set(0, 10, 5); scene.add(sun);
-  const pl1 = new THREE.PointLight(0x00d4ff, 2, 30); pl1.position.set(-5, 3, 8); scene.add(pl1);
-  const pl2 = new THREE.PointLight(0x0088cc, 1.5, 20); pl2.position.set(5, -2, 6); scene.add(pl2);
-
-  const fishColors = [0x00cfff,0xff6b35,0xffd700,0x00e5a0,0xff88cc,0x7b68ee,0xff4f4f,0x40e0d0];
-
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,100);
+  camera.position.set(0,0,15);
+  scene.add(new THREE.AmbientLight(0x0a3060,2));
+  const sun = new THREE.DirectionalLight(0x3ab5e0,3); sun.position.set(0,10,5); scene.add(sun);
+  const pl1 = new THREE.PointLight(0x00d4ff,2,30); pl1.position.set(-5,3,8); scene.add(pl1);
+  const fishColors=[0x00cfff,0xff6b35,0xffd700,0x00e5a0,0xff88cc,0x7b68ee,0xff4f4f,0x40e0d0];
   function makeFish(color){
-    const g = new THREE.Group();
-    const mat = new THREE.MeshPhongMaterial({color, shininess:80, specular:0xffffff});
-    const bodyGeo = new THREE.SphereGeometry(0.5,16,10); bodyGeo.scale(1,0.55,0.35);
-    g.add(new THREE.Mesh(bodyGeo, mat));
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), new THREE.MeshPhongMaterial({color:0x111111}));
-    eye.position.set(0.4,0.1,0.2); g.add(eye);
-    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.5,6), mat);
-    tail.rotation.z = Math.PI/2; tail.position.set(-0.7,0,0); g.add(tail);
-    const fin = new THREE.Mesh(new THREE.ConeGeometry(0.15,0.3,4), mat);
-    fin.position.set(0.05,0.35,0); g.add(fin);
+    const g=new THREE.Group(); const mat=new THREE.MeshPhongMaterial({color,shininess:80,specular:0xffffff});
+    const bodyGeo=new THREE.SphereGeometry(0.5,16,10); bodyGeo.scale(1,0.55,0.35); g.add(new THREE.Mesh(bodyGeo,mat));
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8),new THREE.MeshPhongMaterial({color:0x111111})); eye.position.set(0.4,0.1,0.2); g.add(eye);
+    const tail=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.5,6),mat); tail.rotation.z=Math.PI/2; tail.position.set(-0.7,0,0); g.add(tail);
+    const fin=new THREE.Mesh(new THREE.ConeGeometry(0.15,0.3,4),mat); fin.position.set(0.05,0.35,0); g.add(fin);
     return g;
   }
-
-  const fishes=[]; const fishData=[];
+  const fishes=[],fishData=[];
   for(let i=0;i<14;i++){
-    const fish = makeFish(fishColors[i%fishColors.length]);
-    const scale = 0.4+Math.random()*0.7; fish.scale.setScalar(scale);
-    const d = {
-      radius:6+Math.random()*5, speed:(0.2+Math.random()*0.4)*(Math.random()>0.5?1:-1),
-      angle:Math.random()*Math.PI*2, yBase:(Math.random()-0.5)*8,
-      yAmp:0.5+Math.random()*1, yFreq:0.3+Math.random()*0.5,
-      tailPhase:Math.random()*Math.PI*2, tailSpeed:3+Math.random()*3,
-      phase:Math.random()*Math.PI*2, depth:-2-Math.random()*6
-    };
-    fish.position.set(Math.cos(d.angle)*d.radius, d.yBase, d.depth);
-    scene.add(fish); fishes.push(fish); fishData.push(d);
+    const fish=makeFish(fishColors[i%fishColors.length]); const scale=0.4+Math.random()*0.7; fish.scale.setScalar(scale);
+    const d={radius:6+Math.random()*5,speed:(0.2+Math.random()*0.4)*(Math.random()>0.5?1:-1),angle:Math.random()*Math.PI*2,yBase:(Math.random()-0.5)*8,yAmp:0.5+Math.random()*1,yFreq:0.3+Math.random()*0.5,tailPhase:Math.random()*Math.PI*2,tailSpeed:3+Math.random()*3,phase:Math.random()*Math.PI*2,depth:-2-Math.random()*6};
+    fish.position.set(Math.cos(d.angle)*d.radius,d.yBase,d.depth); scene.add(fish); fishes.push(fish); fishData.push(d);
   }
-
-  const bubbleMat = new THREE.MeshPhongMaterial({color:0x88ddff,transparent:true,opacity:0.22,shininess:120,specular:0xffffff});
+  const bubbleMat=new THREE.MeshPhongMaterial({color:0x88ddff,transparent:true,opacity:0.22,shininess:120,specular:0xffffff});
   const bubbles3d=[];
   for(let i=0;i<25;i++){
-    const b = new THREE.Mesh(new THREE.SphereGeometry(1,8,8), bubbleMat.clone());
-    const s=0.04+Math.random()*0.12; b.scale.setScalar(s);
-    b.position.set((Math.random()-0.5)*20, -12+Math.random()*5, -4+Math.random()*3);
-    bubbles3d.push({mesh:b, speed:0.5+Math.random()*1.5, drift:(Math.random()-0.5)*0.01});
-    scene.add(b);
+    const b=new THREE.Mesh(new THREE.SphereGeometry(1,8,8),bubbleMat.clone()); const s=0.04+Math.random()*0.12; b.scale.setScalar(s);
+    b.position.set((Math.random()-0.5)*20,-12+Math.random()*5,-4+Math.random()*3); bubbles3d.push({mesh:b,speed:0.5+Math.random()*1.5,drift:(Math.random()-0.5)*0.01}); scene.add(b);
   }
-
-  const rayMat = new THREE.MeshBasicMaterial({color:0x00aaee,transparent:true,opacity:0.035,side:THREE.DoubleSide});
-  for(let i=0;i<6;i++){
-    const ray = new THREE.Mesh(new THREE.PlaneGeometry(0.5+Math.random()*0.5, 20), rayMat.clone());
-    ray.rotation.z=(Math.random()-0.5)*0.4; ray.position.set((Math.random()-0.5)*16,5,-8+Math.random()*4);
-    scene.add(ray);
-  }
-
-  let mouseX=0, mouseY=0;
-  window.addEventListener('mousemove', e=>{
-    mouseX=(e.clientX/window.innerWidth-0.5)*2;
-    mouseY=(e.clientY/window.innerHeight-0.5)*2;
-  });
-  window.addEventListener('resize',()=>{
-    camera.aspect=window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth,window.innerHeight);
-  });
-
+  let mouseX=0,mouseY=0;
+  window.addEventListener('mousemove',e=>{mouseX=(e.clientX/window.innerWidth-0.5)*2;mouseY=(e.clientY/window.innerHeight-0.5)*2;});
+  window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
   let frame=0;
   function animate(){
     requestAnimationFrame(animate); frame++;
     const t=frame*0.01;
-    camera.position.x+=(mouseX*1.5-camera.position.x)*0.03;
-    camera.position.y+=(-mouseY*1.0-camera.position.y)*0.03;
-    camera.lookAt(0,0,0);
-
+    camera.position.x+=(mouseX*1.5-camera.position.x)*0.03; camera.position.y+=(-mouseY*1.0-camera.position.y)*0.03; camera.lookAt(0,0,0);
     fishes.forEach((fish,i)=>{
       const d=fishData[i]; d.angle+=d.speed*0.01;
-      const x=Math.cos(d.angle)*d.radius;
-      const z=Math.sin(d.angle)*(d.radius*0.5)+d.depth;
-      const y=d.yBase+Math.sin(t*d.yFreq+d.phase)*d.yAmp;
-      fish.position.set(x,y,z);
+      fish.position.set(Math.cos(d.angle)*d.radius, d.yBase+Math.sin(t*d.yFreq+d.phase)*d.yAmp, Math.sin(d.angle)*(d.radius*0.5)+d.depth);
       const dx=-Math.sin(d.angle)*d.speed; const dz=Math.cos(d.angle)*(d.radius*0.5)*d.speed;
       if(Math.abs(dx)>0.001||Math.abs(dz)>0.001) fish.rotation.y=Math.atan2(dx,dz);
       if(d.speed<0) fish.rotation.y+=Math.PI;
-      const tail=fish.children[2];
-      if(tail) tail.rotation.y=Math.sin(t*d.tailSpeed+d.tailPhase)*0.5;
+      const tail=fish.children[2]; if(tail) tail.rotation.y=Math.sin(t*d.tailSpeed+d.tailPhase)*0.5;
     });
-
-    bubbles3d.forEach(b=>{
-      b.mesh.position.y+=b.speed*0.02; b.mesh.position.x+=b.drift;
-      if(b.mesh.position.y>10){ b.mesh.position.y=-12; b.mesh.position.x=(Math.random()-0.5)*20; }
-    });
+    bubbles3d.forEach(b=>{b.mesh.position.y+=b.speed*0.02;b.mesh.position.x+=b.drift;if(b.mesh.position.y>10){b.mesh.position.y=-12;b.mesh.position.x=(Math.random()-0.5)*20;}});
     renderer.render(scene,camera);
   }
   animate();
 })();
 
-/* ===================================================
-   CSS BUBBLES (landing)
-   =================================================== */
+/* =============================================
+   CSS BUBBLES
+   ============================================= */
 (function spawnBubbles(){
   const c=document.getElementById('bubbles');
   for(let i=0;i<22;i++){
@@ -948,9 +861,9 @@ document.getElementById('code-editor').value = DEFAULT_ARDUINO_CODE;
   }
 })();
 
-/* ===================================================
+/* =============================================
    ENTER DASHBOARD
-   =================================================== */
+   ============================================= */
 document.getElementById('btn-enter').addEventListener('click',()=>{
   const landing=document.getElementById('landing');
   const dashboard=document.getElementById('dashboard');
@@ -959,102 +872,69 @@ document.getElementById('btn-enter').addEventListener('click',()=>{
     landing.style.display='none';
     dashboard.classList.add('visible');
     initChart(); startClock();
+    loadHistory();
+    subscribeRealtime();
+    showToast('☁ Connected to Supabase cloud', false, 'info');
   },800);
 });
 
-/* ===================================================
+/* =============================================
    CLOCK
-   =================================================== */
+   ============================================= */
 function startClock(){
   const el=document.getElementById('nav-time');
-  setInterval(()=>{ el.textContent=new Date().toLocaleTimeString('en-GB'); },1000);
+  setInterval(()=>{el.textContent=new Date().toLocaleTimeString('en-GB');},1000);
   el.textContent=new Date().toLocaleTimeString('en-GB');
 }
 
-/* ===================================================
+/* =============================================
    CHART.JS
-   =================================================== */
+   ============================================= */
 let turbChart;
-const turbLabels=[], turbData=[];
-
+const turbLabels=[],turbData=[];
 function initChart(){
   const ctx=document.getElementById('turbChart').getContext('2d');
   const gradient=ctx.createLinearGradient(0,0,0,240);
-  gradient.addColorStop(0,'rgba(6,182,212,0.48)');
-  gradient.addColorStop(1,'rgba(6,182,212,0.01)');
-
-  turbChart=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:turbLabels,
-      datasets:[{
-        label:'Turbidity', data:turbData,
-        borderColor:'#06b6d4', backgroundColor:gradient,
-        borderWidth:2, pointRadius:3, pointBackgroundColor:'#06b6d4',
-        pointBorderColor:'transparent', tension:0.4, fill:true
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:{duration:350},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(3,10,19,0.92)', titleColor:'#7dd3fc', bodyColor:'#a5f3fc',
-          borderColor:'rgba(6,182,212,0.28)', borderWidth:1,
-          callbacks:{label:ctx=>`Turbidity: ${ctx.raw} NTU`}
-        }
-      },
-      scales:{
-        x:{ticks:{color:'#4a8fa8',font:{family:'Space Mono',size:9},maxTicksLimit:6}, grid:{color:'rgba(6,182,212,0.06)'}},
-        y:{ticks:{color:'#4a8fa8',font:{family:'Space Mono',size:9}}, grid:{color:'rgba(6,182,212,0.06)'}, beginAtZero:true, suggestedMax:500}
-      }
-    }
-  });
+  gradient.addColorStop(0,'rgba(6,182,212,0.48)'); gradient.addColorStop(1,'rgba(6,182,212,0.01)');
+  turbChart=new Chart(ctx,{type:'line',data:{labels:turbLabels,datasets:[{label:'Turbidity',data:turbData,borderColor:'#06b6d4',backgroundColor:gradient,borderWidth:2,pointRadius:3,pointBackgroundColor:'#06b6d4',pointBorderColor:'transparent',tension:0.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:350},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(3,10,19,0.92)',titleColor:'#7dd3fc',bodyColor:'#a5f3fc',borderColor:'rgba(6,182,212,0.28)',borderWidth:1,callbacks:{label:ctx=>`Turbidity: ${ctx.raw} NTU`}}},scales:{x:{ticks:{color:'#4a8fa8',font:{family:'Space Mono',size:9},maxTicksLimit:6},grid:{color:'rgba(6,182,212,0.06)'}},y:{ticks:{color:'#4a8fa8',font:{family:'Space Mono',size:9}},grid:{color:'rgba(6,182,212,0.06)'},beginAtZero:true,suggestedMax:500}}}});
 }
-
 function updateChart(turbidity){
   const now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   turbLabels.push(now); turbData.push(turbidity);
-  if(turbLabels.length>30){ turbLabels.shift(); turbData.shift(); }
+  if(turbLabels.length>30){turbLabels.shift();turbData.shift();}
   turbChart.update();
 }
 
-/* ===================================================
+/* =============================================
    WEB SERIAL API
-   =================================================== */
-let serialPort=null, serialReader=null, readLoopActive=false;
-let packetCount=0, lineBuffer='';
+   ============================================= */
+let serialPort=null,serialReader=null,readLoopActive=false;
+let packetCount=0,lineBuffer='';
+const btnConnect=document.getElementById('btn-connect');
+const btnDisconnect=document.getElementById('btn-disconnect');
+const connStatus=document.getElementById('conn-status');
+const connLabel=document.getElementById('conn-label');
 
-const btnConnect    = document.getElementById('btn-connect');
-const btnDisconnect = document.getElementById('btn-disconnect');
-const connStatus    = document.getElementById('conn-status');
-const connLabel     = document.getElementById('conn-label');
-
-btnConnect.addEventListener('click', async()=>{
-  if(!('serial' in navigator)){ showToast('Web Serial not supported. Use Chrome/Edge.', true); return; }
+btnConnect.addEventListener('click',async()=>{
+  if(!('serial' in navigator)){showToast('Web Serial not supported. Use Chrome/Edge.',true);return;}
   try{
     serialPort=await navigator.serial.requestPort();
     await serialPort.open({baudRate:9600});
-    connStatus.classList.add('connected');
-    connLabel.textContent='CONNECTED';
+    connStatus.classList.add('connected'); connLabel.textContent='CONNECTED';
     document.getElementById('sys-conn').textContent='Connected via USB';
-    btnConnect.style.display='none';
-    btnDisconnect.style.display='inline-block';
+    btnConnect.style.display='none'; btnDisconnect.style.display='inline-block';
     showToast('Arduino connected ✓');
     readLoopActive=true; readSerial();
-  }catch(err){ showToast('Connection failed: '+err.message, true); }
+  }catch(err){showToast('Connection failed: '+err.message,true);}
 });
 
-btnDisconnect.addEventListener('click', async()=>{
+btnDisconnect.addEventListener('click',async()=>{
   readLoopActive=false;
-  try{
-    if(serialReader){ await serialReader.cancel(); serialReader=null; }
-    if(serialPort)  { await serialPort.close();    serialPort=null; }
-  }catch{}
+  try{if(serialReader){await serialReader.cancel();serialReader=null;}if(serialPort){await serialPort.close();serialPort=null;}}catch{}
   connStatus.classList.remove('connected'); connLabel.textContent='DISCONNECTED';
   document.getElementById('sys-conn').textContent='Disconnected';
   btnConnect.style.display='inline-block'; btnDisconnect.style.display='none';
-  showToast('Arduino disconnected', true);
+  showToast('Arduino disconnected',true);
 });
 
 async function readSerial(){
@@ -1063,37 +943,30 @@ async function readSerial(){
   serialReader=decoder.readable.getReader();
   try{
     while(readLoopActive){
-      const {value,done}=await serialReader.read();
-      if(done||!readLoopActive) break;
+      const{value,done}=await serialReader.read();
+      if(done||!readLoopActive)break;
       lineBuffer+=value;
-      const lines=lineBuffer.split('\n');
-      lineBuffer=lines.pop();
-      for(const line of lines){
-        const t=line.trim();
-        if(t.length>0) processLine(t);
-      }
+      const lines=lineBuffer.split('\n'); lineBuffer=lines.pop();
+      for(const line of lines){const t=line.trim();if(t.length>0)processLine(t);}
     }
-  }catch(err){
-    if(readLoopActive) showToast('Serial error: '+err.message, true);
-  }finally{ serialReader=null; }
+  }catch(err){if(readLoopActive)showToast('Serial error: '+err.message,true);}
+  finally{serialReader=null;}
 }
 
-/* ===================================================
-   PARSE SERIAL DATA
-   NEW FORMAT:
-   "Turbidity: 350 | Temp: 26.50 | Level: 780 Pump ON"
-   =================================================== */
-const SERIAL_REGEX = /Turbidity:\s*(\d+)\s*\|\s*Temp:\s*([\d.]+)\s*\|\s*Level:\s*(\d+)\s*Pump\s*(ON|OFF)/i;
+/* =============================================
+   PARSE SERIAL + SAVE TO SUPABASE
+   ============================================= */
+const SERIAL_REGEX=/Turbidity:\s*(\d+)\s*\|\s*Temp:\s*([\d.]+)\s*\|\s*Level:\s*(\d+)\s*Pump\s*(ON|OFF)/i;
 
-function processLine(line){
+async function processLine(line){
   addConsoleLine(line);
   const match=SERIAL_REGEX.exec(line);
-  if(!match) return;
+  if(!match)return;
 
-  const turbidity = parseInt(match[1], 10);
-  const tempC     = parseFloat(match[2]);
-  const level     = parseInt(match[3], 10);
-  const pumpOn    = match[4].toUpperCase()==='ON';
+  const turbidity=parseInt(match[1],10);
+  const tempC=parseFloat(match[2]);
+  const level=parseInt(match[3],10);
+  const pumpOn=match[4].toUpperCase()==='ON';
 
   packetCount++;
   document.getElementById('sys-packets').textContent=packetCount;
@@ -1104,173 +977,91 @@ function processLine(line){
   updateWaterLevel(level);
   updatePump(pumpOn);
   updateChart(turbidity);
+
+  // ☁ Save to Supabase
+  await saveReading(turbidity, tempC, level, pumpOn);
+
+  // 🚨 Check alerts
+  await checkAndFireAlerts(turbidity, tempC, level);
 }
 
-/* ===================================================
-   TURBIDITY UI
-   =================================================== */
+/* =============================================
+   UI UPDATERS
+   ============================================= */
 function updateTurbidity(val){
   document.getElementById('turb-val').textContent=val;
-  const orb=document.getElementById('water-orb');
-  const label=document.getElementById('water-status-label');
-  const msg=document.getElementById('water-status-msg');
-  const icon=document.getElementById('orb-icon');
-  const inline=document.getElementById('turb-status-inline');
-  const overlay=document.getElementById('turbidity-overlay');
-
+  const orb=document.getElementById('water-orb'),label=document.getElementById('water-status-label'),msg=document.getElementById('water-status-msg'),icon=document.getElementById('orb-icon'),inline=document.getElementById('turb-status-inline'),overlay=document.getElementById('turbidity-overlay');
   orb.classList.remove('warning','danger'); label.classList.remove('warning','danger');
-
-  if(val<200){
-    label.textContent='CLEAN'; label.className='water-status-label';
-    msg.textContent='Water is safe for aquaculture'; icon.textContent='💧';
-    inline.textContent='● Clean water'; inline.style.color='var(--cyan)';
-    overlay.classList.remove('foggy');
-  } else if(val<=300){
-    orb.classList.add('warning');
-    label.textContent='WARNING'; label.className='water-status-label warning';
-    msg.textContent='Water is becoming unclear'; icon.textContent='⚠️';
-    inline.textContent='● Moderate turbidity'; inline.style.color='var(--yellow)';
-    overlay.classList.remove('foggy');
-  } else {
-    orb.classList.add('danger');
-    label.textContent='DANGEROUS'; label.className='water-status-label danger';
-    msg.textContent='Immediate action required!'; icon.textContent='🚨';
-    inline.textContent='● High turbidity — action!'; inline.style.color='var(--red)';
-    overlay.classList.add('foggy');
-  }
+  if(val<200){label.textContent='CLEAN';label.className='water-status-label';msg.textContent='Water is safe for aquaculture';icon.textContent='💧';inline.textContent='● Clean water';inline.style.color='var(--cyan)';overlay.classList.remove('foggy');}
+  else if(val<=300){orb.classList.add('warning');label.textContent='WARNING';label.className='water-status-label warning';msg.textContent='Water is becoming unclear';icon.textContent='⚠️';inline.textContent='● Moderate turbidity';inline.style.color='var(--yellow)';overlay.classList.remove('foggy');}
+  else{orb.classList.add('danger');label.textContent='DANGEROUS';label.className='water-status-label danger';msg.textContent='Immediate action required!';icon.textContent='🚨';inline.textContent='● High turbidity — action!';inline.style.color='var(--red)';overlay.classList.add('foggy');}
 }
 
-/* ===================================================
-   TEMPERATURE UI
-   =================================================== */
 function updateTemperature(val){
   document.getElementById('temp-val').textContent=val.toFixed(1);
   const inline=document.getElementById('temp-status-inline');
-  if(val<20){ inline.textContent='● Below optimal (<20°C)'; inline.style.color='var(--sky)'; }
-  else if(val>30){ inline.textContent='● Above optimal (>30°C)'; inline.style.color='var(--red)'; }
-  else { inline.textContent='● Optimal range (20–30°C)'; inline.style.color='var(--green)'; }
+  if(val<20){inline.textContent='● Below optimal (<20°C)';inline.style.color='var(--sky)';}
+  else if(val>30){inline.textContent='● Above optimal (>30°C)';inline.style.color='var(--red)';}
+  else{inline.textContent='● Optimal range (20–30°C)';inline.style.color='var(--green)';}
 }
 
-/* ===================================================
-   WATER LEVEL UI
-   Level sensor: 0–1023 analog
-   0–300  = LOW (red)    → fill < 30%
-   300–700 = MEDIUM (yellow) → fill 30–70%
-   700–1023 = HIGH (green)   → fill > 70%
-   =================================================== */
 function updateWaterLevel(val){
   document.getElementById('wlevel-val').textContent=val;
-
-  const pct   = Math.round((val / 1023) * 100);
-  const fill  = document.getElementById('wlevel-fill');
-  const pctEl = document.getElementById('wlevel-pct');
-  const inline= document.getElementById('wlevel-status-inline');
-  const sysWl = document.getElementById('sys-wlevel');
-
-  fill.style.height = pct + '%';
-  pctEl.textContent = pct + '%';
-
-  fill.classList.remove('low','mid','high');
-  pctEl.classList.remove('low','mid','high');
-
-  if(val < 300){
-    fill.classList.add('low'); pctEl.classList.add('low');
-    inline.textContent='● LOW — Water level critical'; inline.style.color='var(--red)';
-    sysWl.textContent='LOW ('+pct+'%) — Critical';
-  } else if(val <= 700){
-    fill.classList.add('mid'); pctEl.classList.add('mid');
-    inline.textContent='● MEDIUM — Normal range'; inline.style.color='var(--yellow)';
-    sysWl.textContent='MEDIUM ('+pct+'%) — Normal';
-  } else {
-    fill.classList.add('high'); pctEl.classList.add('high');
-    inline.textContent='● HIGH — Tank full'; inline.style.color='var(--green)';
-    sysWl.textContent='HIGH ('+pct+'%) — Full';
-  }
+  const pct=Math.round((val/1023)*100);
+  const fill=document.getElementById('wlevel-fill'),pctEl=document.getElementById('wlevel-pct'),inline=document.getElementById('wlevel-status-inline'),sysWl=document.getElementById('sys-wlevel');
+  fill.style.height=pct+'%'; pctEl.textContent=pct+'%';
+  fill.classList.remove('low','mid','high'); pctEl.classList.remove('low','mid','high');
+  if(val<300){fill.classList.add('low');pctEl.classList.add('low');inline.textContent='● LOW — Water level critical';inline.style.color='var(--red)';sysWl.textContent='LOW ('+pct+'%) — Critical';}
+  else if(val<=700){fill.classList.add('mid');pctEl.classList.add('mid');inline.textContent='● MEDIUM — Normal range';inline.style.color='var(--yellow)';sysWl.textContent='MEDIUM ('+pct+'%) — Normal';}
+  else{fill.classList.add('high');pctEl.classList.add('high');inline.textContent='● HIGH — Tank full';inline.style.color='var(--green)';sysWl.textContent='HIGH ('+pct+'%) — Full';}
 }
 
-/* ===================================================
-   PUMP UI
-   =================================================== */
 function updatePump(on){
-  const dot=document.getElementById('pump-dot');
-  const lbl=document.getElementById('pump-label');
-  const card=document.getElementById('pump-card');
-  const sub=document.getElementById('pump-sub');
-  const sysPump=document.getElementById('sys-pump');
-
-  if(on){
-    dot.classList.add('pump-on'); lbl.classList.add('pump-on'); lbl.textContent='ACTIVE';
-    card.classList.add('pump-on-state'); sub.textContent='Pump running — filtering water';
-    sysPump.textContent='ON — Active';
-  } else {
-    dot.classList.remove('pump-on'); lbl.classList.remove('pump-on'); lbl.textContent='STANDBY';
-    card.classList.remove('pump-on-state'); sub.textContent='Pump idle — water clean';
-    sysPump.textContent='OFF — Standby';
-  }
+  const dot=document.getElementById('pump-dot'),lbl=document.getElementById('pump-label'),card=document.getElementById('pump-card'),sub=document.getElementById('pump-sub'),sysPump=document.getElementById('sys-pump');
+  if(on){dot.classList.add('pump-on');lbl.classList.add('pump-on');lbl.textContent='ACTIVE';card.classList.add('pump-on-state');sub.textContent='Pump running — filtering water';sysPump.textContent='ON — Active';}
+  else{dot.classList.remove('pump-on');lbl.classList.remove('pump-on');lbl.textContent='STANDBY';card.classList.remove('pump-on-state');sub.textContent='Pump idle — water clean';sysPump.textContent='OFF — Standby';}
 }
 
-/* ===================================================
+/* =============================================
    SERIAL CONSOLE
-   =================================================== */
+   ============================================= */
 const MAX_LINES=50; let lineCount=0;
-
 function addConsoleLine(text){
   const container=document.getElementById('console-lines');
-  const empty=container.querySelector('.console-empty');
-  if(empty) empty.remove();
-
+  const empty=container.querySelector('.console-empty'); if(empty)empty.remove();
   const ts=new Date().toLocaleTimeString('en-GB');
   const div=document.createElement('div'); div.className='console-line';
-
   const colored=text
     .replace(/(Turbidity:)\s*(\d+)/gi,'<span class="msg">$1</span> <span class="val">$2</span>')
     .replace(/(Temp:)\s*([\d.]+)/gi,'<span class="msg">$1</span> <span class="val">$2</span>')
     .replace(/(Level:)\s*(\d+)/gi,'<span class="msg">$1</span> <span class="val">$2</span>')
     .replace(/Pump (ON|OFF)/gi,(m,s)=>`Pump <span style="color:${s==='ON'?'#f87171':'#67e8f9'};font-weight:700">${s}</span>`);
-
   div.innerHTML=`<span class="ts">[${ts}]</span><span>${colored}</span>`;
   container.appendChild(div); lineCount++;
-  if(lineCount>MAX_LINES){ container.removeChild(container.firstChild); lineCount--; }
-  const sc=document.getElementById('serial-console');
-  sc.scrollTop=sc.scrollHeight;
+  if(lineCount>MAX_LINES){container.removeChild(container.firstChild);lineCount--;}
+  const sc=document.getElementById('serial-console'); sc.scrollTop=sc.scrollHeight;
 }
 
-/* ===================================================
+/* =============================================
    COPY CODE
-   =================================================== */
+   ============================================= */
 function copyCode(){
   navigator.clipboard.writeText(document.getElementById('code-editor').value).then(()=>{
-    const btn=document.getElementById('btn-copy');
-    btn.textContent='✓ Copied!'; btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='⎘ Copy'; btn.classList.remove('copied'); },2000);
+    const btn=document.getElementById('btn-copy'); btn.textContent='✓ Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='⎘ Copy';btn.classList.remove('copied');},2000);
   });
 }
 
-/* ===================================================
+/* =============================================
    TOAST
-   =================================================== */
+   ============================================= */
 let toastTimer;
-function showToast(msg, isError=false){
+function showToast(msg, isError=false, type=''){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show'+(isError?' error':'');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg;
+  t.className='toast show'+(isError?' error':type==='info'?' info':'');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
 }
-
-/* ===================================================
-   DEMO MODE (uncomment to test without Arduino)
-   New format includes Level field
-   =================================================== */
-/*
-let _f=0;
-setInterval(()=>{
-  _f++;
-  const turb  = Math.floor(100+Math.sin(_f*0.15)*150+Math.random()*60);
-  const temp  = 22+Math.sin(_f*0.07)*6+(Math.random()-0.5);
-  const level = Math.floor(400+Math.sin(_f*0.05)*300+Math.random()*100);
-  const pump  = (turb>300||temp<20||temp>30) && level>300;
-  processLine(`Turbidity: ${turb} | Temp: ${temp.toFixed(2)} | Level: ${level} Pump ${pump?'ON':'OFF'}`);
-},2000);
-*/
 
 </script>
 </body>
